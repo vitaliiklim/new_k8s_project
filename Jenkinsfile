@@ -4,35 +4,47 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                // Клонуємо репозиторій через SSH
                 git branch: 'main', url: 'git@github.com:vitaliiklim/new_k8s_project.git'
+            }
+        }
+
+        stage('Setup Python Virtual Environment') {
+            steps {
+                sh '''
+                python3 -m venv venv
+                . venv/bin/activate
+                '''
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                // Встановлюємо залежності
-                sh 'pip install -r requirements.txt'
+                sh '''
+                . venv/bin/activate
+                pip install -r requirements.txt
+                '''
             }
         }
 
         stage('Run Tests') {
             steps {
-                // Запускаємо тести
-                sh 'python -m unittest discover'
+                sh '''
+                . venv/bin/activate
+                python -m unittest discover
+                '''
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                // Створюємо Docker-образ
-                sh 'docker build -t flask-server .'
+                sh '''
+                docker build -t flask-server .
+                '''
             }
         }
 
         stage('Push to Local Registry') {
             steps {
-                // Завантажуємо образ у локальний Docker реєстр
                 sh '''
                 docker tag flask-server localhost:5000/flask-server
                 docker push localhost:5000/flask-server
